@@ -1,1 +1,101 @@
-# task-cli
+# Task CLI 🚀
+
+A premium, high-performance CLI Task Manager built with **React**, **Ink**, and **TypeScript**. Features a snappy terminal interface and a beautiful, interactive GUI mode.
+
+## ✨ Features
+
+- **Blazing Fast CLI**: Optimized startup using dynamic imports. CLI commands run in <100ms.
+- **Interactive GUI**: A stunning React-based terminal UI with real-time updates.
+- **Priority System**: Organize tasks by `high`, `medium`, or `low` priority.
+- **Search & Filter**: Find tasks instantly with text or `@tag` search.
+- **Intelligent Sorting**: High-priority tasks stay at the top; completed tasks move to the bottom.
+- **Visual Progress**: Real-time progress bar tracking your daily productivity.
+- **Custom Theme**: Beautiful Pink aesthetics.
+
+## 🛠️ Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/chrisburlacu1/task-cli.git
+cd task-cli
+
+# Install dependencies
+npm install
+
+# Build the project
+npm run build
+
+# Link globally (optional)
+npm link
+```
+
+## 📖 Usage
+
+### Interactive GUI Mode
+
+Simply run the command with no arguments:
+
+```bash
+tasks
+```
+
+**Controls:**
+
+- `a`: Add a new task
+- `s`: Search tasks (text or `@tag`)
+- `space` / `enter`: Toggle completion
+- `d`: Delete selected task
+- `c`: Clear all completed tasks
+- `q`: Quit
+
+### Command Line Mode (Fast Path)
+
+Manage your tasks directly from the terminal with subcommands:
+
+```bash
+tasks add "Water the plants" --high   # Add with priority
+tasks list                            # List all tasks
+tasks done 1                          # Toggle task #1
+tasks rm 2                            # Delete task #2
+tasks clear                           # Clear all completed tasks
+```
+
+## 🎨 Configuration
+
+The theme can be customized in `src/theme.ts`. Change colors, text styles, and more to match your setup.
+
+## 🗄️ Tech Stack
+
+- **Framework**: [Ink](https://github.com/vadimdemedes/ink) (React for CLI)
+- **Storage**: `conf` (Local persistence)
+- **Validation**: `zod`
+- **Utilities**: `date-fns`, `nanoid`
+
+---
+
+Built with ❤️ for rapid productivity using **Gemini 3 Flash**.
+_(This project was entirely AI-generated)_
+
+## 🤖 Gemini CLI Extension
+
+You can also manage your tasks directly through the Gemini CLI!
+
+### 1. Link the extension
+
+In this directory, run:
+
+```bash
+gemini extensions link .
+```
+
+### 2. Available Tools
+
+The Gemini agent will have access to:
+
+- `add_task`: Add tasks with priorities and `@tags`.
+- `list_tasks`: See everything on your plate.
+- `toggle_task`: Mark tasks as done/pending.
+- `delete_task`: Remove tasks.
+- `clear_completed`: Bulk clean-up.
+
+Ask Gemini: _"Add a high priority task to review the task-cli code @work"_

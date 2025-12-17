@@ -1,0 +1,12 @@
+{
+  "name": "task-extension",
+  "version": "1.0.0",
+  "contextFileName": "GEMINI.md",
+  "mcpServers": {
+    "taskServer": {
+      "command": "node",
+      "args": ["${extensionPath}/dist/mcp-server.js"],
+      "cwd": "${extensionPath}"
+    }
+  }
+}
