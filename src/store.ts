@@ -48,6 +48,24 @@ export const addTask = (text: string, priority: TaskPriority, dueDate?: string) 
 	return newTask;
 };
 
+export const addTasks = (newTasksData: { text: string; priority: TaskPriority; dueDate?: string }[]) => {
+	const tasks = getTasks();
+	const newTasks: Task[] = newTasksData.map(({ text, priority, dueDate }) => {
+		const tags = text.match(/@\w+/g)?.map(t => t.slice(1)) || [];
+		return {
+			id: nanoid(),
+			text,
+			completed: false,
+			priority,
+			createdAt: new Date().toISOString(),
+			tags,
+			dueDate,
+		};
+	});
+	store.set('tasks', [...tasks, ...newTasks]);
+	return newTasks;
+};
+
 export const toggleTask = (id: string) => {
 	const tasks = getTasks();
 	const updatedTasks = tasks.map((t) =>

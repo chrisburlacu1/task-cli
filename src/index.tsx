@@ -6,6 +6,7 @@ import {
   TaskPriority,
 } from "./store.js";
 import { THEME_ANSI } from "./theme.js";
+import { parseDate, formatDate } from "./utils/dateUtils.js";
 
 // --- Short aliases for cleaner code ---
 const PRIMARY = THEME_ANSI.primary;
@@ -27,31 +28,48 @@ const handleCli = async () => {
   switch (command) {
     case "add": {
       let priority: TaskPriority = "medium";
-      const textArgs = args.slice(1).filter((arg) => {
+      let dueDate: string | undefined = undefined;
+      const textArgs: string[] = [];
+
+      for (let i = 1; i < args.length; i++) {
+        const arg = args[i];
         if (arg === "--high") {
           priority = "high";
-          return false;
+          continue;
         }
         if (arg === "--medium") {
           priority = "medium";
-          return false;
+          continue;
         }
         if (arg === "--low") {
           priority = "low";
-          return false;
+          continue;
         }
-        return true;
-      });
+        if (arg === "--due" || arg === "-d") {
+          const nextArg = args[i + 1];
+          if (nextArg && !nextArg.startsWith("-")) {
+            const parsed = parseDate(nextArg);
+            if (parsed) {
+              dueDate = parsed;
+              i++; // skip next arg
+              continue;
+            } else {
+              console.warn(`Warning: Could not parse date "${nextArg}". Ignoring due date.`);
+            }
+          }
+        }
+        textArgs.push(arg);
+      }
 
       const text = textArgs.join(" ");
       if (!text) {
         console.error(
-          "Error: Please provide task text. Usage: tasks add <text> [--high|--medium|--low]"
+          "Error: Please provide task text. Usage: tasks add <text> [--high|--medium|--low] [--due <date>]"
         );
         process.exit(1);
       }
-      addTask(text, priority);
-      console.log(`${PRIMARY}✔ Added task:${RESET} ${text} (${priority})`);
+      addTask(text, priority, dueDate);
+      console.log(`${PRIMARY}✔ Added task:${RESET} ${text} (${priority})${dueDate ? ` [Due: ${formatDate(dueDate)}]` : ""}`);
       process.exit(0);
       break;
     }
@@ -90,6 +108,7 @@ const handleCli = async () => {
       break;
     }
     case "list": {
+      const sortArg = args.find((_, i) => args[i-1] === "--sort");
       const tasks = getTasks();
       if (tasks.length === 0) {
         console.log("No tasks found.");
@@ -99,12 +118,20 @@ const handleCli = async () => {
         // Sorting: High -> Med -> Low, then incomplete before complete
         const sorted = [...tasks].sort((a, b) => {
           if (a.completed !== b.completed) return a.completed ? 1 : -1;
+          
+          if (sortArg === "due") {
+            if (!a.dueDate) return 1;
+            if (!b.dueDate) return -1;
+            return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+          }
+
           const priorities = { high: 0, medium: 1, low: 2 };
           return priorities[a.priority] - priorities[b.priority];
         });
 
         sorted.forEach((t, i) => {
-          const text = `${i + 1}. ${t.text} (${t.priority})`;
+          const dueStr = t.dueDate ? ` [Due: ${formatDate(t.dueDate)}]` : "";
+          const text = `${i + 1}. ${t.text} (${t.priority})${dueStr}`;
           console.log(
             t.completed
               ? `${THEME_ANSI.strikethrough}${text}${THEME_ANSI.resetStrikethrough}`
@@ -118,14 +145,14 @@ const handleCli = async () => {
     case "help":
     default:
       console.log(`${PRIMARY}Task CLI - Usage:${RESET}`);
-      console.log("  tasks                - Open interactive GUI");
+      console.log("  tasks                         - Open interactive GUI");
       console.log(
-        "  tasks add <t> [--p]  - Add task (+ optional --high/medium/low)"
+        "  tasks add <t> [--p] [--due d] - Add task (+ optional --high/medium/low, --due/-d <date>)"
       );
-      console.log("  tasks list           - List all tasks");
-      console.log("  tasks done <num>     - Toggle task completion by number");
-      console.log("  tasks rm <num>       - Delete task by number");
-      console.log("  tasks clear          - Clear all completed tasks");
+      console.log("  tasks list [--sort due]       - List all tasks (optional sort)");
+      console.log("  tasks done <num>              - Toggle task completion by number");
+      console.log("  tasks rm <num>                - Delete task by number");
+      console.log("  tasks clear                   - Clear all completed tasks");
       process.exit(0);
   }
 };

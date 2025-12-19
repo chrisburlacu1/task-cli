@@ -1,0 +1,12 @@
+{
+  "id": "ai_mcp_expansions_20251219",
+  "name": "AI & MCP Expansions",
+  "description": "Enhancing the MCP server with code scanning capabilities and bulk operations to enable smarter AI agent interactions.",
+  "status": "active",
+  "startDate": "2025-12-19",
+  "phases": [
+    "Foundation",
+    "TODO Scanner",
+    "Bulk Operations"
+  ]
+}

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from "react";
 import { render, Box, Text, useInput, useApp } from "ink";
 import SelectInput from "ink-select-input";
 import TextInput from "ink-text-input";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, isPast, isToday } from "date-fns";
 import {
   getTasks,
   addTask,
@@ -13,6 +13,7 @@ import {
   TaskPriority,
 } from "./store.js";
 import { THEME } from "./theme.js";
+import { formatDate, parseDate } from "./utils/dateUtils.js";
 
 // --- Components ---
 
@@ -84,47 +85,61 @@ const TaskRow = React.memo(
     task: Task;
     isSelected: boolean;
     getPriorityColor: (p: TaskPriority) => string;
-  }) => (
-    <Box>
-      <Text color={isSelected ? THEME.primary : THEME.text} bold={isSelected}>
-        {isSelected ? "➤ " : "  "}
-      </Text>
-      <Box width={30}>
-        <Text
-          strikethrough={task.completed}
-          bold={isSelected}
-          color={
-            isSelected
-              ? THEME.primary
-              : task.completed
-              ? THEME.muted
-              : THEME.text
-          }
-        >
-          {task.text}
+  }) => {
+    const isOverdue = task.dueDate && !task.completed && isPast(new Date(task.dueDate)) && !isToday(new Date(task.dueDate));
+    
+    return (
+      <Box>
+        <Text color={isSelected ? THEME.primary : THEME.text} bold={isSelected}>
+          {isSelected ? "➤ " : "  "}
         </Text>
+        <Box width={30}>
+          <Text
+            strikethrough={task.completed}
+            bold={isSelected}
+            color={
+              isSelected
+                ? THEME.primary
+                : task.completed
+                ? THEME.muted
+                : THEME.text
+            }
+          >
+            {task.text}
+          </Text>
+        </Box>
+        <Box marginLeft={2} width={10}>
+          <Text
+            strikethrough={task.completed}
+            bold={isSelected}
+            color={task.completed ? THEME.muted : getPriorityColor(task.priority)}
+          >
+            [{task.priority}]
+          </Text>
+        </Box>
+        <Box marginLeft={2} width={15}>
+          {task.dueDate ? (
+            <Text 
+              color={task.completed ? THEME.muted : (isOverdue ? THEME.error : THEME.warning)} 
+              bold={!task.completed}
+            >
+              Due: {formatDate(task.dueDate)}
+            </Text>
+          ) : (
+            <Text color={THEME.muted} italic>
+              {formatDistanceToNow(new Date(task.createdAt), { addSuffix: true })}
+            </Text>
+          )}
+        </Box>
       </Box>
-      <Box marginLeft={2} width={10}>
-        <Text
-          strikethrough={task.completed}
-          bold={isSelected}
-          color={task.completed ? THEME.muted : getPriorityColor(task.priority)}
-        >
-          [{task.priority}]
-        </Text>
-      </Box>
-      <Box marginLeft={2} width={15}>
-        <Text color={THEME.muted} italic>
-          {formatDistanceToNow(new Date(task.createdAt), { addSuffix: true })}
-        </Text>
-      </Box>
-    </Box>
-  )
+    );
+  }
 );
 
 // --- Main App ---
 
 type ViewMode = "list" | "add" | "search";
+type AddStep = "text" | "priority" | "dueDate";
 
 const App = () => {
   const { exit } = useApp();
@@ -132,8 +147,10 @@ const App = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [newTaskText, setNewTaskText] = useState("");
+  const [newTaskPriority, setNewTaskPriority] = useState<TaskPriority>("medium");
+  const [newTaskDueDate, setNewTaskDueDate] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
-  const [step, setStep] = useState<"text" | "priority">("text");
+  const [step, setStep] = useState<AddStep>("text");
   const [status, setStatus] = useState("");
 
   useEffect(() => {
@@ -156,9 +173,17 @@ const App = () => {
         )
     );
 
-    // Sorting: High -> Med -> Low, then incomplete before complete
+    // Sorting: Incomplete first, then by due date (closest first), then priority
     return result.sort((a, b) => {
       if (a.completed !== b.completed) return a.completed ? 1 : -1;
+      
+      // Both incomplete or both complete
+      if (a.dueDate && b.dueDate) {
+        return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+      }
+      if (a.dueDate) return -1;
+      if (b.dueDate) return 1;
+
       const priorities = { high: 0, medium: 1, low: 2 };
       return priorities[a.priority] - priorities[b.priority];
     });
@@ -205,6 +230,7 @@ const App = () => {
       if (key.escape) {
         setMode("list");
         setNewTaskText("");
+        setNewTaskDueDate("");
         setSearchQuery("");
         setStep("text");
       }
@@ -220,10 +246,22 @@ const App = () => {
   };
 
   const handlePrioritySubmit = (item: { value: TaskPriority }) => {
-    addTask(newTaskText, item.value);
+    setNewTaskPriority(item.value);
+    setStep("dueDate");
+  };
+
+  const handleDueDateSubmit = (value: string) => {
+    const parsedDate = value.trim() ? parseDate(value) : undefined;
+    
+    if (value.trim() && !parsedDate) {
+       showStatus("⚠ Invalid date format, ignored.");
+    }
+
+    addTask(newTaskText, newTaskPriority, parsedDate || undefined);
     showStatus(`✔ Added: ${newTaskText}`);
     refreshTasks();
     setNewTaskText("");
+    setNewTaskDueDate("");
     setStep("text");
     setMode("list");
   };
@@ -307,7 +345,7 @@ const App = () => {
                 onSubmit={handleAddTextSubmit}
               />
             </Box>
-          ) : (
+          ) : step === "priority" ? (
             <Box flexDirection="column">
               <Box marginBottom={1}>
                 <Text bold color={THEME.primary}>
@@ -318,6 +356,22 @@ const App = () => {
                 items={priorityOptions}
                 onSelect={handlePrioritySubmit}
               />
+            </Box>
+          ) : (
+            <Box flexDirection="column">
+              <Box>
+                <Text bold color={THEME.primary}>
+                  Due Date (optional, e.g. "tomorrow", "2025-12-25"):{" "}
+                </Text>
+              </Box>
+              <TextInput
+                value={newTaskDueDate}
+                onChange={setNewTaskDueDate}
+                onSubmit={handleDueDateSubmit}
+              />
+              <Box marginTop={1}>
+                <Text color={THEME.muted}>Press Enter to skip or confirm date.</Text>
+              </Box>
             </Box>
           )}
         </Box>
