@@ -3,8 +3,11 @@ import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
 import { z } from 'zod';
 import {
   getTasks,
+  getAllTags,
+  searchTasks,
   addTask,
   addTasks,
+  updateTask,
   toggleTask,
   deleteTask,
   clearCompleted,
@@ -12,12 +15,227 @@ import {
 } from './store.js';
 import { parseDate, formatDate } from './utils/dateUtils.js';
 import { scanDirectory } from './utils/fileScanner.js';
+import { slugify } from './utils/stringUtils.js';
+import { findActionsSection } from './utils/meetingParser.js';
 import path from 'path';
+import fs from 'fs';
+import { exec } from 'child_process';
+import { promisify } from 'util';
+
+const execAsync = promisify(exec);
 
 const server = new McpServer({
   name: 'task-manager-server',
   version: '1.0.0',
 });
+
+// Tool: read_meeting_actions
+server.registerTool(
+  'read_meeting_actions',
+  {
+    description: 'Read a file (e.g., meeting notes) and extract the "Actions" or "Action Items" section to facilitate task creation. If no specific section is found, it returns the full content.',
+    inputSchema: z.object({
+      file_path: z.string().describe('The path to the file to read'),
+    }).shape,
+  },
+  async ({ file_path }) => {
+    try {
+      const fullPath = path.resolve(process.cwd(), file_path);
+      if (!fs.existsSync(fullPath)) {
+        return {
+          isError: true,
+          content: [{ type: 'text', text: `File not found: ${file_path}` }],
+        };
+      }
+
+      const content = fs.readFileSync(fullPath, 'utf-8');
+      const actionsSection = findActionsSection(content);
+
+      if (actionsSection) {
+        return {
+          content: [
+            {
+              type: 'text',
+              text: `Extracted Actions Section:\n\n${actionsSection.trim()}`,
+            },
+          ],
+        };
+      }
+
+      // Fallback: return full content (truncated if necessary)
+      const truncated = content.length > 10000 ? content.slice(0, 10000) + '... [truncated]' : content;
+      return {
+        content: [
+          {
+            type: 'text',
+            text: `No specific "Actions" section found. Returning full content:\n\n${truncated}`,
+          },
+        ],
+      };
+    } catch (error: any) {
+      return {
+        isError: true,
+        content: [{ type: 'text', text: `Failed to read file: ${error.message}` }],
+      };
+    }
+  }
+);
+
+// Tool: git_branch_from_task
+server.registerTool(
+  'git_branch_from_task',
+  {
+    description: 'Create a git branch based on a task ID. Uses the task description to generate a kebab-case branch name.',
+    inputSchema: z.object({
+      id: z.string().describe('The unique ID of the task'),
+    }).shape,
+  },
+  async ({ id }) => {
+    try {
+      const tasks = getTasks();
+      const task = tasks.find(t => t.id === id);
+      
+      if (!task) {
+        return {
+          isError: true,
+          content: [{ type: 'text', text: `Task with ID ${id} not found.` }],
+        };
+      }
+
+      const branchName = slugify(task.text);
+      if (!branchName) {
+        return {
+          isError: true,
+          content: [{ type: 'text', text: `Could not generate a valid branch name from task text: "${task.text}"` }],
+        };
+      }
+
+      // Check if inside a git repo (simple check)
+      try {
+        await execAsync('git rev-parse --is-inside-work-tree');
+      } catch {
+        return {
+          isError: true,
+          content: [{ type: 'text', text: 'Current directory is not a git repository.' }],
+        };
+      }
+
+      await execAsync(`git checkout -b ${branchName}`);
+
+      return {
+        content: [{ type: 'text', text: `Successfully created and checked out branch: ${branchName}` }],
+      };
+    } catch (error: any) {
+      return {
+        isError: true,
+        content: [{ type: 'text', text: `Failed to create branch: ${error.message}` }],
+      };
+    }
+  }
+);
+
+// Tool: search_tasks
+server.registerTool(
+  'search_tasks',
+  {
+    description: 'Search for tasks by text or tag. Useful for finding specific tasks without listing everything.',
+    inputSchema: z.object({
+      query: z.string().describe('Search query (text substring or @tag)'),
+    }).shape,
+  },
+  async ({ query }) => {
+    const tasks = searchTasks(query);
+    if (tasks.length === 0) {
+      return {
+        content: [{ type: 'text', text: `No tasks found matching "${query}".` }],
+      };
+    }
+
+    const taskList = tasks
+      .map((t, i) => `${i + 1}. [${t.completed ? '✔' : ' '}] ${t.text} (${t.priority}) - ID: ${t.id}`)
+      .join('\n');
+
+    return {
+      content: [{ type: 'text', text: `--- Search Results ("${query}") ---\n${taskList}` }],
+    };
+  }
+);
+
+// Tool: get_all_tags
+server.registerTool(
+  'get_all_tags',
+  {
+    description: 'Get a list of all tags currently used in the task list. Useful for maintaining consistent categorization.',
+    inputSchema: z.object({}).shape,
+  },
+  async () => {
+    const tags = getAllTags();
+    return {
+      content: [
+        {
+          type: 'text',
+          text: tags.length > 0 
+            ? `Current Tags: ${tags.map(t => `@${t}`).join(', ')}`
+            : 'No tags found.',
+        },
+      ],
+    };
+  }
+);
+
+// Tool: update_task
+server.registerTool(
+  'update_task',
+  {
+    description: 'Update an existing task by its ID. You can change text, priority, or due date.',
+    inputSchema: z.object({
+      id: z.string().describe('The unique ID of the task'),
+      text: z.string().optional().describe('New description for the task'),
+      priority: z.enum(['low', 'medium', 'high']).optional().describe('New priority'),
+      due_date: z.string().optional().describe('New due date (natural language or ISO). Use "none" to clear.'),
+    }).shape,
+  },
+  async ({ id, text, priority, due_date }) => {
+    try {
+      let parsedDueDate: string | undefined | null = undefined;
+      if (due_date) {
+        if (due_date.toLowerCase() === 'none') {
+          parsedDueDate = null; // Signal to clear it
+        } else {
+          parsedDueDate = parseDate(due_date);
+          if (!parsedDueDate) {
+            return {
+              isError: true,
+              content: [{ type: 'text', text: `Failed to parse due date: ${due_date}` }],
+            };
+          }
+        }
+      }
+
+      const updated = updateTask(id, {
+        text,
+        priority: priority as TaskPriority | undefined,
+        dueDate: parsedDueDate || undefined,
+      });
+
+      if (!updated) {
+        return {
+          isError: true,
+          content: [{ type: 'text', text: `Task with ID ${id} not found.` }],
+        };
+      }
+
+      return {
+        content: [{ type: 'text', text: `Successfully updated task ${id}.` }],
+      };
+    } catch (error: any) {
+      return {
+        isError: true,
+        content: [{ type: 'text', text: `Failed to update task: ${error.message}` }],
+      };
+    }
+  }
+);
 
 // Tool: scan_todos
 server.registerTool(
