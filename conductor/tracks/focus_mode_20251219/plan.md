@@ -9,7 +9,7 @@
 ## Phase 2: MCP Tooling
 - [x] Task: Register `set_task_status` MCP tool in `src/mcp-server.ts`. 6fe75ed
 - [x] Task: Verify tool via unit tests or script. a45f909
-- [ ] Task: Conductor - User Manual Verification 'Phase 2: MCP Tooling' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 2: MCP Tooling' (Protocol in workflow.md) [checkpoint: eef1c6b]
 
 ## Phase 3: CLI & GUI Implementation
 - [ ] Task: Update `src/index.tsx` (CLI) to support `start` and `stop` commands and update `list` output.
