@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { TaskSchema, addTask, getTasks } from '../src/store';
+import { describe, it, expect, vi } from 'vitest';
+import { TaskSchema, addTask, getTasks, updateTask } from '../src/store';
 
 // Mock Conf
 vi.mock('conf', () => {
@@ -41,6 +41,32 @@ describe('Store', () => {
       
       const tasks = getTasks();
       expect(tasks[tasks.length - 1].dueDate).toBe(dueDate);
+    });
+  });
+
+  describe('updateTask', () => {
+    it('should update task text and tags', () => {
+      const task = addTask('Initial text', 'medium');
+      const updated = updateTask(task.id, { text: 'Updated text @newtag' });
+      
+      expect(updated?.text).toBe('Updated text @newtag');
+      expect(updated?.tags).toContain('newtag');
+    });
+
+    it('should update task priority', () => {
+      const task = addTask('Test priority', 'low');
+      const updated = updateTask(task.id, { priority: 'high' });
+      
+      expect(updated?.priority).toBe('high');
+    });
+
+    it('should update or clear due date', () => {
+      const task = addTask('Test date', 'medium', '2025-01-01');
+      const updated = updateTask(task.id, { dueDate: '2025-02-02' });
+      expect(updated?.dueDate).toBe('2025-02-02');
+
+      const cleared = updateTask(task.id, { dueDate: null });
+      expect(cleared?.dueDate).toBeUndefined();
     });
   });
 });

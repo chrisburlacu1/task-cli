@@ -32,6 +32,24 @@ const store = new Conf<SchemaType>({
 
 export const getTasks = () => store.get('tasks');
 
+export const getAllTags = () => {
+	const tasks = getTasks();
+	const tags = new Set<string>();
+	tasks.forEach(task => {
+		task.tags.forEach(tag => tags.add(tag));
+	});
+	return Array.from(tags).sort();
+};
+
+export const searchTasks = (query: string) => {
+	const tasks = getTasks();
+	const lowerQuery = query.toLowerCase();
+	return tasks.filter(t => 
+		t.text.toLowerCase().includes(lowerQuery) || 
+		t.tags.some(tag => tag.toLowerCase() === lowerQuery.replace('@', ''))
+	);
+};
+
 export const addTask = (text: string, priority: TaskPriority, dueDate?: string) => {
 	const tasks = getTasks();
 	const tags = text.match(/@\w+/g)?.map(t => t.slice(1)) || [];
@@ -72,6 +90,31 @@ export const toggleTask = (id: string) => {
 		t.id === id ? { ...t, completed: !t.completed } : t
 	);
 	store.set('tasks', updatedTasks);
+};
+
+export const updateTask = (id: string, updates: { text?: string; priority?: TaskPriority; dueDate?: string | null }) => {
+	const tasks = getTasks();
+	let updatedTask: Task | undefined;
+
+	const updatedTasks = tasks.map((t) => {
+		if (t.id === id) {
+			const text = updates.text ?? t.text;
+			const tags = updates.text ? (updates.text.match(/@\w+/g)?.map(tag => tag.slice(1)) || []) : t.tags;
+			
+			updatedTask = {
+				...t,
+				text,
+				tags,
+				priority: updates.priority ?? t.priority,
+				dueDate: updates.dueDate === null ? undefined : (updates.dueDate ?? t.dueDate),
+			};
+			return updatedTask;
+		}
+		return t;
+	});
+
+	store.set('tasks', updatedTasks);
+	return updatedTask;
 };
 
 export const deleteTask = (id: string) => {
