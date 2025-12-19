@@ -2,7 +2,7 @@
 
 ## Phase 1: Foundation & Data Layer
 - [x] Task: Update Zod schema in `store.ts` to include optional `dueDate` field. bf6234a
-- [ ] Task: Install `date-fns` and create a utility helper for date parsing/formatting.
+- [x] Task: Install `date-fns` and create a utility helper for date parsing/formatting. df42093
 - [ ] Task: Update `addTask` function to accept and store `dueDate`.
 - [ ] Task: Conductor - User Manual Verification 'Phase 1: Foundation & Data Layer' (Protocol in workflow.md)
 
