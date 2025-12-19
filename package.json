@@ -8,7 +8,8 @@
   },
   "scripts": {
     "start": "tsx src/index.tsx",
-    "build": "tsc"
+    "build": "tsc",
+    "test": "vitest"
   },
   "repository": {
     "type": "git",
@@ -38,6 +39,7 @@
     "@types/node": "^25.0.3",
     "@types/react": "^19.2.7",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.16"
   }
 }

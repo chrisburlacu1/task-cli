@@ -5,13 +5,14 @@ import { nanoid } from 'nanoid';
 const TaskPrioritySchema = z.enum(['low', 'medium', 'high']);
 export type TaskPriority = z.infer<typeof TaskPrioritySchema>;
 
-const TaskSchema = z.object({
+export const TaskSchema = z.object({
 	id: z.string(),
 	text: z.string(),
 	completed: z.boolean(),
 	priority: TaskPrioritySchema,
 	createdAt: z.string(),
 	tags: z.array(z.string()),
+	dueDate: z.string().optional(),
 });
 
 export type Task = z.infer<typeof TaskSchema>;
