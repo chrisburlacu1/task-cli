@@ -13,12 +13,11 @@
 
 - [x] Task: Create a test fixture file `test/fixtures/meeting_notes.md` with a clear "Actions" section and priorities. 0dbbd02
 
-    - [~] Task: Create an automated test or script to verify `meetingParser` logic correctly extracts the section.
+    - [x] Task: Create an automated test or script to verify `meetingParser` logic correctly extracts the section. 1c4a84b
 
+        - [~] Task: Verify end-to-end flow manually (or via script) by simulating the Agent's calls:
 
-
-
-- [ ] Task: Verify end-to-end flow manually (or via script) by simulating the Agent's calls:
+    
     1. Call `read_meeting_actions`.
     2. Parse result.
     3. Call `bulk_add_tasks`.
