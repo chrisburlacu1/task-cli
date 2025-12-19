@@ -3,10 +3,10 @@
 ## Phase 1: Tool Implementation
 - [x] Task: Create `src/utils/meetingParser.ts` utility. c1da107
     - [x] Sub-task: Implement `findActionsSection(content: string): string` logic to regex match headers ("Actions", "Action Items") and extract content until the next header.
-- [ ] Task: Register `read_meeting_actions` MCP tool in `src/mcp-server.ts`.
-    - [ ] Sub-task: Define Zod schema for input (`file_path`).
-    - [ ] Sub-task: Implement handler to read file and call `findActionsSection`.
-    - [ ] Sub-task: Handle fallback (return full content) if no section found.
+- [x] Task: Register `read_meeting_actions` MCP tool in `src/mcp-server.ts`. deabb7c
+    - [x] Sub-task: Define Zod schema for input (`file_path`).
+    - [x] Sub-task: Implement handler to read file and call `findActionsSection`.
+    - [x] Sub-task: Handle fallback (return full content) if no section found.
 - [ ] Task: Conductor - User Manual Verification 'Phase 1: Tool Implementation' (Protocol in workflow.md)
 
 ## Phase 2: Workflow Verification
