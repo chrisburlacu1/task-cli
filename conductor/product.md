@@ -18,7 +18,7 @@ To provide a seamless, high-performance task management experience for developer
 - **Fast-Path CLI:** Direct subcommands for adding, listing, and completing tasks.
 - **Interactive GUI:** A modern, keyboard-driven UI built with Ink.
 - **Intelligent Importer:** Specialized MCP tool for extracting actionable tasks from meeting notes and project documents.
-- **Enhanced Task Metadata:** Support for due dates, priorities (low, medium, high), and recurring tasks to handle complex project management.
+- **Enhanced Task Metadata:** Support for status tracking (Pending, In-Progress, Completed), due dates, priorities, and recurring tasks.
 - **Tagging System:** Automatic parsing of `@tags` from task descriptions for easy organization.
 
 ## Design Philosophy

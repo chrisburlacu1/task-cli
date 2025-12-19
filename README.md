@@ -6,10 +6,11 @@ A premium, high-performance CLI Task Manager built with **React**, **Ink**, and 
 
 - **Blazing Fast CLI**: Optimized startup using dynamic imports. CLI commands run in <100ms.
 - **Interactive GUI**: A stunning React-based terminal UI with real-time updates.
+- **Status Tracking**: Track tasks through `pending`, `in_progress`, and `completed` states.
 - **Due Dates**: Set and track deadlines with natural language parsing (e.g., "tomorrow", "next friday").
 - **Priority System**: Organize tasks by `high`, `medium`, or `low` priority.
 - **Search & Filter**: Find tasks instantly with text or `@tag` search.
-- **Intelligent Sorting**: Smart prioritization by due date, priority, and completion status.
+- **Intelligent Sorting**: Smart prioritization by status, due date, priority, and completion status.
 - **Codebase Scanner**: Automatically discover `TODO`, `FIXME`, and `BUG` comments in your code.
 - **Visual Progress**: Real-time progress bar tracking your daily productivity.
 - **Custom Theme**: Beautiful Pink aesthetics.
@@ -44,7 +45,9 @@ tasks
 **Controls:**
 
 - `a`: Add a new task
-- `s`: Search tasks (text or `@tag`)
+- `f`: Search tasks (text or `@tag`)
+- `s`: Start task (set status to `in_progress`)
+- `x`: Stop task (set status to `pending`)
 - `space` / `enter`: Toggle completion
 - `d`: Delete selected task
 - `c`: Clear all completed tasks
@@ -56,6 +59,8 @@ Manage your tasks directly from the terminal with subcommands:
 
 ```bash
 tasks add "Water the plants" --high --due tomorrow   # Add with priority & date
+tasks start 1                                        # Mark task #1 as in-progress
+tasks stop 1                                         # Mark task #1 as pending
 tasks list --sort due                                # List sorted by deadline
 tasks done 1                                         # Toggle task #1
 tasks rm 2                                           # Delete task #2
@@ -97,6 +102,7 @@ The Gemini agent will have access to:
 - `add_task`: Add tasks with priorities, `@tags`, and **due dates**.
 - `list_tasks`: See everything on your plate, with optional date filtering.
 - `update_task`: Modify existing tasks (text, priority, due date).
+- `set_task_status`: Explicitly set status (`pending`, `in_progress`, `completed`).
 - `get_all_tags`: See all tags currently in use.
 - `search_tasks`: Smart fuzzy search to find tasks without listing everything.
 - `git_branch_from_task`: Create a git branch directly from a task ID.
