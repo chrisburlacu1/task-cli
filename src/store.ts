@@ -32,7 +32,7 @@ const store = new Conf<SchemaType>({
 
 export const getTasks = () => store.get('tasks');
 
-export const addTask = (text: string, priority: TaskPriority) => {
+export const addTask = (text: string, priority: TaskPriority, dueDate?: string) => {
 	const tasks = getTasks();
 	const tags = text.match(/@\w+/g)?.map(t => t.slice(1)) || [];
 	const newTask: Task = {
@@ -42,6 +42,7 @@ export const addTask = (text: string, priority: TaskPriority) => {
 		priority,
 		createdAt: new Date().toISOString(),
 		tags,
+		dueDate,
 	};
 	store.set('tasks', [...tasks, newTask]);
 	return newTask;
