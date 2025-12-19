@@ -96,10 +96,15 @@ The Gemini agent will have access to:
 
 - `add_task`: Add tasks with priorities, `@tags`, and **due dates**.
 - `list_tasks`: See everything on your plate, with optional date filtering.
+- `update_task`: Modify existing tasks (text, priority, due date).
+- `get_all_tags`: See all tags currently in use.
+- `search_tasks`: Smart fuzzy search to find tasks without listing everything.
+- `git_branch_from_task`: Create a git branch directly from a task ID.
 - `scan_todos`: Scan your codebase for `TODO`/`FIXME` comments.
+- `read_meeting_actions`: Extract tasks from a meeting notes file intelligently.
 - `bulk_add_tasks`: Convert multiple scanned items into tasks in one turn.
 - `toggle_task`: Mark tasks as done/pending.
 - `delete_task`: Remove tasks.
 - `clear_completed`: Bulk clean-up.
 
-Ask Gemini: _"Scan the codebase for TODOs and add them as high priority tasks."_
+Ask Gemini: _"Find the login task and create a branch for it."_
