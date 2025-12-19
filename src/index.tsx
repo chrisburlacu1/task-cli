@@ -1,7 +1,7 @@
 import {
   getTasks,
   addTask,
-  actionByIndex,
+  updateTaskByIndex,
   clearCompleted,
   TaskPriority,
 } from "./store.js";
@@ -73,13 +73,41 @@ const handleCli = async () => {
       process.exit(0);
       break;
     }
+    case "start": {
+      const idx = parseInt(args[1]) - 1;
+      if (isNaN(idx)) {
+        console.error("Error: Please provide a valid task number.");
+        process.exit(1);
+      }
+      if (updateTaskByIndex(idx, { status: "in_progress" })) {
+        console.log(`${PRIMARY}✔ Task started.${RESET}`);
+      } else {
+        console.error("Error: Task not found.");
+      }
+      process.exit(0);
+      break;
+    }
+    case "stop": {
+      const idx = parseInt(args[1]) - 1;
+      if (isNaN(idx)) {
+        console.error("Error: Please provide a valid task number.");
+        process.exit(1);
+      }
+      if (updateTaskByIndex(idx, { status: "pending" })) {
+        console.log(`${PRIMARY}✔ Task stopped.${RESET}`);
+      } else {
+        console.error("Error: Task not found.");
+      }
+      process.exit(0);
+      break;
+    }
     case "done": {
       const idx = parseInt(args[1]) - 1;
       if (isNaN(idx)) {
         console.error("Error: Please provide a valid task number.");
         process.exit(1);
       }
-      if (actionByIndex(idx, "toggle")) {
+      if (updateTaskByIndex(idx, { action: "toggle" })) {
         console.log(`${PRIMARY}✔ Toggled task status.${RESET}`);
       } else {
         console.error("Error: Task not found.");
@@ -93,7 +121,7 @@ const handleCli = async () => {
         console.error("Error: Please provide a valid task number.");
         process.exit(1);
       }
-      if (actionByIndex(idx, "delete")) {
+      if (updateTaskByIndex(idx, { action: "delete" })) {
         console.log(`${PRIMARY}✔ Deleted task.${RESET}`);
       } else {
         console.error("Error: Task not found.");
@@ -115,9 +143,10 @@ const handleCli = async () => {
       } else {
         console.log(`${PRIMARY}${BOLD}--- Current Tasks ---${RESET}`);
 
-        // Sorting: High -> Med -> Low, then incomplete before complete
+        // Sorting: In-progress -> Pending -> Completed, then priorities
         const sorted = [...tasks].sort((a, b) => {
-          if (a.completed !== b.completed) return a.completed ? 1 : -1;
+          const statusOrder = { in_progress: 0, pending: 1, completed: 2 };
+          if (a.status !== b.status) return statusOrder[a.status] - statusOrder[b.status];
           
           if (sortArg === "due") {
             if (!a.dueDate) return 1;
@@ -130,8 +159,9 @@ const handleCli = async () => {
         });
 
         sorted.forEach((t, i) => {
+          const statusIcon = t.status === "in_progress" ? "▶ " : "  ";
           const dueStr = t.dueDate ? ` [Due: ${formatDate(t.dueDate)}]` : "";
-          const text = `${i + 1}. ${t.text} (${t.priority})${dueStr}`;
+          const text = `${i + 1}. ${statusIcon}${t.text} (${t.priority})${dueStr}`;
           console.log(
             t.completed
               ? `${THEME_ANSI.strikethrough}${text}${THEME_ANSI.resetStrikethrough}`
@@ -150,6 +180,8 @@ const handleCli = async () => {
         "  tasks add <t> [--p] [--due d] - Add task (+ optional --high/medium/low, --due/-d <date>)"
       );
       console.log("  tasks list [--sort due]       - List all tasks (optional sort)");
+      console.log("  tasks start <num>             - Set task status to in-progress");
+      console.log("  tasks stop <num>              - Set task status to pending");
       console.log("  tasks done <num>              - Toggle task completion by number");
       console.log("  tasks rm <num>                - Delete task by number");
       console.log("  tasks clear                   - Clear all completed tasks");

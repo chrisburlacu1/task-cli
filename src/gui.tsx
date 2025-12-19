@@ -59,8 +59,7 @@ const Footer = React.memo(({ mode }: { mode: "list" | "add" | "search" }) => (
   >
     {mode === "list" ? (
       <Text italic color={THEME.muted}>
-        [a] Add | [d] Delete | [s] Search | [c] Clear Completed | [space] Toggle
-        | [q] Quit
+        [a] Add | [d] Delete | [s] Start | [x] Stop | [f] Search | [c] Clear Completed | [space] Toggle | [q] Quit
       </Text>
     ) : (
       <Text italic color={THEME.muted}>
@@ -87,6 +86,7 @@ const TaskRow = React.memo(
     getPriorityColor: (p: TaskPriority) => string;
   }) => {
     const isOverdue = task.dueDate && !task.completed && isPast(new Date(task.dueDate)) && !isToday(new Date(task.dueDate));
+    const isInProgress = task.status === "in_progress";
     
     return (
       <Box>
@@ -96,16 +96,18 @@ const TaskRow = React.memo(
         <Box width={30}>
           <Text
             strikethrough={task.completed}
-            bold={isSelected}
+            bold={isSelected || isInProgress}
             color={
               isSelected
                 ? THEME.primary
+                : isInProgress
+                ? THEME.success
                 : task.completed
                 ? THEME.muted
                 : THEME.text
             }
           >
-            {task.text}
+            {isInProgress ? "▶ " : ""}{task.text}
           </Text>
         </Box>
         <Box marginLeft={2} width={10}>
@@ -173,11 +175,11 @@ const App = () => {
         )
     );
 
-    // Sorting: Incomplete first, then by due date (closest first), then priority
+    // Sorting: In-progress -> Pending -> Completed, then due dates, then priority
     return result.sort((a, b) => {
-      if (a.completed !== b.completed) return a.completed ? 1 : -1;
+      const statusOrder = { in_progress: 0, pending: 1, completed: 2 };
+      if (a.status !== b.status) return statusOrder[a.status] - statusOrder[b.status];
       
-      // Both incomplete or both complete
       if (a.dueDate && b.dueDate) {
         return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
       }
@@ -193,11 +195,27 @@ const App = () => {
     if (mode === "list") {
       if (input === "q") exit();
       if (input === "a") setMode("add");
-      if (input === "s") setMode("search");
+      if (input === "f") setMode("search");
       if (input === "c") {
         clearCompleted();
         refreshTasks();
         showStatus("✔ Cleared completed tasks");
+      }
+      if (input === "s") {
+        const task = filteredTasks[selectedIndex];
+        if (task && !task.completed) {
+          updateTask(task.id, { status: "in_progress" });
+          refreshTasks();
+          showStatus(`✔ Started: ${task.text}`);
+        }
+      }
+      if (input === "x") {
+        const task = filteredTasks[selectedIndex];
+        if (task && task.status === "in_progress") {
+          updateTask(task.id, { status: "pending" });
+          refreshTasks();
+          showStatus(`✔ Stopped: ${task.text}`);
+        }
       }
       if (key.return || input === " ") {
         const task = filteredTasks[selectedIndex];

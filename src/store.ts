@@ -156,13 +156,18 @@ export const clearCompleted = () => {
 	store.set('tasks', remaining);
 };
 
-export const actionByIndex = (index: number, action: 'toggle' | 'delete') => {
+export const updateTaskByIndex = (index: number, updates: { action?: 'toggle' | 'delete'; status?: TaskStatus }) => {
 	const tasks = getTasks();
 	const target = tasks[index];
 	if (!target) return false;
 	
-	if (action === 'toggle') toggleTask(target.id);
-	if (action === 'delete') deleteTask(target.id);
+	if (updates.action === 'toggle') {
+		toggleTask(target.id);
+	} else if (updates.action === 'delete') {
+		deleteTask(target.id);
+	} else if (updates.status) {
+		updateTask(target.id, { status: updates.status });
+	}
 	return true;
 };
 
