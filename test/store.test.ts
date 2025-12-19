@@ -19,6 +19,7 @@ describe('Store', () => {
         id: '123',
         text: 'Test task',
         completed: false,
+        status: 'pending',
         priority: 'medium',
         createdAt: new Date().toISOString(),
         tags: [],
@@ -52,10 +53,11 @@ describe('Store', () => {
   });
 
   describe('addTask', () => {
-    it('should store a dueDate when provided', () => {
+    it('should store a dueDate when provided and default status to pending', () => {
       const dueDate = new Date().toISOString();
       const newTask = addTask('Test task', 'high', dueDate);
       expect(newTask.dueDate).toBe(dueDate);
+      expect(newTask.status).toBe('pending');
       
       const tasks = getTasks();
       expect(tasks[tasks.length - 1].dueDate).toBe(dueDate);
@@ -63,19 +65,22 @@ describe('Store', () => {
   });
 
   describe('updateTask', () => {
-    it('should update task text and tags', () => {
+    it('should update task text, tags and status', () => {
       const task = addTask('Initial text', 'medium');
-      const updated = updateTask(task.id, { text: 'Updated text @newtag' });
+      const updated = updateTask(task.id, { text: 'Updated text @newtag', status: 'in_progress' });
       
       expect(updated?.text).toBe('Updated text @newtag');
       expect(updated?.tags).toContain('newtag');
+      expect(updated?.status).toBe('in_progress');
+      expect(updated?.completed).toBe(false);
     });
 
-    it('should update task priority', () => {
-      const task = addTask('Test priority', 'low');
-      const updated = updateTask(task.id, { priority: 'high' });
+    it('should mark completed when status is updated to completed', () => {
+      const task = addTask('Test complete', 'low');
+      const updated = updateTask(task.id, { status: 'completed' });
       
-      expect(updated?.priority).toBe('high');
+      expect(updated?.status).toBe('completed');
+      expect(updated?.completed).toBe(true);
     });
 
     it('should update or clear due date', () => {

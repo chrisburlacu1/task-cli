@@ -32,6 +32,18 @@ const store = new Conf<SchemaType>({
 	defaults: {
 		tasks: [],
 	},
+	migrations: {
+		'1.1.0': (store: any) => {
+			const tasks = store.get('tasks');
+			if (tasks && Array.isArray(tasks)) {
+				const migratedTasks = tasks.map((t: any) => ({
+					...t,
+					status: t.status || (t.completed ? 'completed' : 'pending'),
+				}));
+				store.set('tasks', migratedTasks);
+			}
+		},
+	},
 });
 
 export const getTasks = () => store.get('tasks');
@@ -61,6 +73,7 @@ export const addTask = (text: string, priority: TaskPriority, dueDate?: string) 
 		id: nanoid(),
 		text,
 		completed: false,
+		status: 'pending',
 		priority,
 		createdAt: new Date().toISOString(),
 		tags,
@@ -78,6 +91,7 @@ export const addTasks = (newTasksData: { text: string; priority: TaskPriority; d
 			id: nanoid(),
 			text,
 			completed: false,
+			status: 'pending',
 			priority,
 			createdAt: new Date().toISOString(),
 			tags,
@@ -90,13 +104,17 @@ export const addTasks = (newTasksData: { text: string; priority: TaskPriority; d
 
 export const toggleTask = (id: string) => {
 	const tasks = getTasks();
-	const updatedTasks = tasks.map((t) =>
-		t.id === id ? { ...t, completed: !t.completed } : t
-	);
+	const updatedTasks = tasks.map((t) => {
+		if (t.id === id) {
+			const completed = !t.completed;
+			return { ...t, completed, status: completed ? 'completed' : 'pending' as TaskStatus };
+		}
+		return t;
+	});
 	store.set('tasks', updatedTasks);
 };
 
-export const updateTask = (id: string, updates: { text?: string; priority?: TaskPriority; dueDate?: string | null }) => {
+export const updateTask = (id: string, updates: { text?: string; priority?: TaskPriority; status?: TaskStatus; dueDate?: string | null }) => {
 	const tasks = getTasks();
 	let updatedTask: Task | undefined;
 
@@ -104,11 +122,15 @@ export const updateTask = (id: string, updates: { text?: string; priority?: Task
 		if (t.id === id) {
 			const text = updates.text ?? t.text;
 			const tags = updates.text ? (updates.text.match(/@\w+/g)?.map(tag => tag.slice(1)) || []) : t.tags;
+			const status = updates.status ?? t.status;
+			const completed = status === 'completed';
 			
 			updatedTask = {
 				...t,
 				text,
 				tags,
+				status,
+				completed,
 				priority: updates.priority ?? t.priority,
 				dueDate: updates.dueDate === null ? undefined : (updates.dueDate ?? t.dueDate),
 			};
