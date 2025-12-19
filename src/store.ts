@@ -5,10 +5,14 @@ import { nanoid } from 'nanoid';
 const TaskPrioritySchema = z.enum(['low', 'medium', 'high']);
 export type TaskPriority = z.infer<typeof TaskPrioritySchema>;
 
+const TaskStatusSchema = z.enum(['pending', 'in_progress', 'completed']);
+export type TaskStatus = z.infer<typeof TaskStatusSchema>;
+
 export const TaskSchema = z.object({
 	id: z.string(),
 	text: z.string(),
 	completed: z.boolean(),
+	status: TaskStatusSchema,
 	priority: TaskPrioritySchema,
 	createdAt: z.string(),
 	tags: z.array(z.string()),

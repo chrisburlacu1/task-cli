@@ -31,6 +31,24 @@ describe('Store', () => {
         expect(result.data.dueDate).toBe(taskWithDueDate.dueDate);
       }
     });
+
+    it('should validate a task with a status field', () => {
+      const task = {
+        id: '123',
+        text: 'Test task',
+        completed: false,
+        priority: 'medium',
+        createdAt: new Date().toISOString(),
+        tags: [],
+        status: 'in_progress',
+      };
+
+      const result = TaskSchema.safeParse(task);
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.status).toBe('in_progress');
+      }
+    });
   });
 
   describe('addTask', () => {
