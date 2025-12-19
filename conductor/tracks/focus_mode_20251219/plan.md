@@ -7,8 +7,8 @@
 - [x] Task: Conductor - User Manual Verification 'Phase 1: Data Layer' (Protocol in workflow.md) [checkpoint: 7633303]
 
 ## Phase 2: MCP Tooling
-- [ ] Task: Register `set_task_status` MCP tool in `src/mcp-server.ts`.
-- [ ] Task: Verify tool via unit tests or script.
+- [x] Task: Register `set_task_status` MCP tool in `src/mcp-server.ts`. 6fe75ed
+- [~] Task: Verify tool via unit tests or script.
 - [ ] Task: Conductor - User Manual Verification 'Phase 2: MCP Tooling' (Protocol in workflow.md)
 
 ## Phase 3: CLI & GUI Implementation
