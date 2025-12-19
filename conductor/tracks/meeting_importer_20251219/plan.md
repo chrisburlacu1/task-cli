@@ -10,20 +10,10 @@
 - [x] Task: Conductor - User Manual Verification 'Phase 1: Tool Implementation' (Protocol in workflow.md) [checkpoint: 1d12cd6]
 
 ## Phase 2: Workflow Verification
-
 - [x] Task: Create a test fixture file `test/fixtures/meeting_notes.md` with a clear "Actions" section and priorities. 0dbbd02
-
-    - [x] Task: Create an automated test or script to verify `meetingParser` logic correctly extracts the section. 1c4a84b
-
-        - [x] Task: Verify end-to-end flow manually (or via script) by simulating the Agent's calls: a876d1a
-
-            1. Call `read_meeting_actions`.
-
-            2. Parse result.
-
-            3. Call `bulk_add_tasks`.
-
-        - [ ] Task: Conductor - User Manual Verification 'Phase 2: Workflow Verification' (Protocol in workflow.md)
-
-        
-- [ ] Task: Conductor - User Manual Verification 'Phase 2: Workflow Verification' (Protocol in workflow.md)
+- [x] Task: Create an automated test or script to verify `meetingParser` logic correctly extracts the section. 1c4a84b
+- [x] Task: Verify end-to-end flow manually (or via script) by simulating the Agent's calls: a876d1a
+    1. Call `read_meeting_actions`.
+    2. Parse result.
+    3. Call `bulk_add_tasks`.
+- [x] Task: Conductor - User Manual Verification 'Phase 2: Workflow Verification' (Protocol in workflow.md) [checkpoint: 6f34af1]
