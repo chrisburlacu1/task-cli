@@ -12,6 +12,7 @@ import {
   deleteTask,
   clearCompleted,
   TaskPriority,
+  TaskStatus,
 } from './store.js';
 import { parseDate, formatDate } from './utils/dateUtils.js';
 import { scanDirectory } from './utils/fileScanner.js';
@@ -180,6 +181,37 @@ server.registerTool(
         },
       ],
     };
+  }
+);
+
+// Tool: set_task_status
+server.registerTool(
+  'set_task_status',
+  {
+    description: 'Explicitly set the status of a task (pending, in_progress, completed).',
+    inputSchema: z.object({
+      id: z.string().describe('The unique ID of the task'),
+      status: z.enum(['pending', 'in_progress', 'completed']).describe('The new status for the task'),
+    }).shape,
+  },
+  async ({ id, status }) => {
+    try {
+      const updated = updateTask(id, { status: status as TaskStatus });
+      if (!updated) {
+        return {
+          isError: true,
+          content: [{ type: 'text', text: `Task with ID ${id} not found.` }],
+        };
+      }
+      return {
+        content: [{ type: 'text', text: `Successfully set task ${id} status to ${status}.` }],
+      };
+    } catch (error: any) {
+      return {
+        isError: true,
+        content: [{ type: 'text', text: `Failed to set task status: ${error.message}` }],
+      };
+    }
   }
 );
 
