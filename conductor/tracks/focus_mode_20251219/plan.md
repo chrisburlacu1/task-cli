@@ -3,7 +3,7 @@
 ## Phase 1: Data Layer & Schema Migration
 - [x] Task: Update `TaskSchema` and `Task` type in `src/store.ts` to include `status`. af1ca47
 - [x] Task: Implement migration logic to map existing `completed: boolean` to the new `status` enum. 248f1d8
-- [~] Task: Update existing CRUD functions (`addTask`, `toggleTask`, etc.) to handle the `status` field.
+- [x] Task: Update existing CRUD functions (`addTask`, `toggleTask`, etc.) to handle the `status` field. 248f1d8
 - [ ] Task: Conductor - User Manual Verification 'Phase 1: Data Layer' (Protocol in workflow.md)
 
 ## Phase 2: MCP Tooling
