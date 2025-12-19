@@ -29,6 +29,7 @@ type SchemaType = z.infer<typeof Schema>;
 
 const store = new Conf<SchemaType>({
 	projectName: 'task-cli',
+	projectVersion: '1.1.0',
 	defaults: {
 		tasks: [],
 	},
