@@ -1,8 +1,21 @@
 import { describe, it, expect } from 'vitest';
 import { findActionsSection } from '../src/utils/meetingParser';
+import fs from 'fs';
+import path from 'path';
 
 describe('meetingParser', () => {
   describe('findActionsSection', () => {
+    it('should extract content from the real fixture file', () => {
+      const fixturePath = path.resolve(__dirname, 'fixtures/meeting_notes.md');
+      const content = fs.readFileSync(fixturePath, 'utf-8');
+      const result = findActionsSection(content);
+      
+      expect(result).toContain('- Fix the login button alignment [high] @ui');
+      expect(result).toContain('- Update the migration script to include indexes [medium]');
+      expect(result).not.toContain('## Discussion');
+      expect(result).not.toContain('## Attendees');
+    });
+
     it('should extract content under "## Actions" header', () => {
       const content = `
 # Meeting Minutes
