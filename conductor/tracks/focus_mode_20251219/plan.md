@@ -13,5 +13,5 @@
 
 ## Phase 3: CLI & GUI Implementation
 - [x] Task: Update `src/index.tsx` (CLI) to support `start` and `stop` commands and update `list` output. 47efc43
-- [~] Task: Update `src/gui.tsx` (TUI) to render visual indicators for `in_progress` tasks.
+- [x] Task: Update `src/gui.tsx` (TUI) to render visual indicators for `in_progress` tasks. 9d74eb8
 - [ ] Task: Conductor - User Manual Verification 'Phase 3: UI Implementation' (Protocol in workflow.md)
