@@ -65,11 +65,23 @@ tasks list --sort due                                # List sorted by deadline
 tasks done 1                                         # Toggle task #1
 tasks rm 2                                           # Delete task #2
 tasks clear                                          # Clear all completed tasks
+tasks archive                                        # Archive all completed tasks
+tasks history                                        # View archived tasks
 ```
 
 ## 🎨 Configuration
 
 The theme can be customized in `src/theme.ts`. Change colors, text styles, and more to match your setup.
+
+## 💻 Development
+
+### Scripts
+
+- `npm start`: Run the CLI (use `-- <args>` to pass arguments).
+- `npm run build`: Compile TypeScript to `dist/`.
+- `npm test`: Run tests with Vitest.
+- `npm run lint`: Run ESLint.
+- `npm run format`: Format code with Prettier.
 
 ## 🗄️ Tech Stack
 

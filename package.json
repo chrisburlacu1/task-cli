@@ -9,7 +9,10 @@
   "scripts": {
     "start": "tsx src/index.tsx",
     "build": "tsc",
-    "test": "vitest"
+    "test": "vitest",
+    "lint": "eslint src test",
+    "lint:fix": "eslint src test --fix",
+    "format": "prettier --write \"src/**/*.{ts,tsx}\" \"test/**/*.{ts,tsx}\""
   },
   "repository": {
     "type": "git",
@@ -26,6 +29,7 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.25.1",
     "@types/conf": "^2.1.0",
+    "commander": "^14.0.2",
     "conf": "^15.0.2",
     "date-fns": "^4.1.0",
     "ink": "^6.5.1",
@@ -38,8 +42,18 @@
   "devDependencies": {
     "@types/node": "^25.0.3",
     "@types/react": "^19.2.7",
+    "@typescript-eslint/eslint-plugin": "^8.51.0",
+    "@typescript-eslint/parser": "^8.51.0",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "globals": "^17.0.0",
+    "prettier": "^3.7.4",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
+    "typescript-eslint": "^8.51.0",
     "vitest": "^4.0.16"
   }
 }

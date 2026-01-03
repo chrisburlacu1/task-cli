@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { TaskSchema, addTask, getTasks, updateTask } from '../src/store';
+import { TaskSchema, addTask, getTasks, updateTask } from '../src/store/store';
 
 // Mock Conf
 vi.mock('conf', () => {
